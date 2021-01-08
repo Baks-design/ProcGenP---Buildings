@@ -1,6 +1,8 @@
 using UnityEngine;
 
-public class WallComponent : MonoBehaviour 
+namespace Baks.Core.Components
 {
-    
+    public class WallComponent : MonoBehaviour 
+    { 
+    }
 }

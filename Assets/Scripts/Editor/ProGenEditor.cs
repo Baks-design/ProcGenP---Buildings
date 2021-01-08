@@ -1,19 +1,22 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(ProGen))]
-public class ProGenEditor : Editor 
+namespace Baks.Core.GenEditor
 {
-    public override void OnInspectorGUI() 
+    [CustomEditor(typeof(ProGen))]
+    public class ProGenEditor : Editor 
     {
-        DrawDefaultInspector();
-        
-        ProGen progen = (ProGen)target;
+        public override void OnInspectorGUI() 
+        {
+            DrawDefaultInspector();
+            
+            ProGen progen = (ProGen)target;
 
-        if (GUILayout.Button("Generate"))
-            progen.Generate();
+            if (GUILayout.Button("Generate"))
+                progen.Generate();
 
-        if (GUI.changed)
-            progen.Generate();
+            if (GUI.changed)
+                progen.Generate();
+        }
     }
 }

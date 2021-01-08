@@ -3,11 +3,8 @@ using UnityEngine;
 public class Room
 {
     public bool HasRoof { get; set; }
-
     public int FloorNumber { get; set; }
-
     public RoomRay RoomRay { get; private set; }
-
     public Wall[] Walls { get; set; } = new Wall[4];
 
     private Vector2 _position;
