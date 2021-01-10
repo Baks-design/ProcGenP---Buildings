@@ -1,22 +1,43 @@
 using UnityEngine;
 using UnityEditor;
+using Action = System.Action;
+using Baks.Core;
 
-namespace Baks.Core.GenEditor
+[CustomEditor(typeof(ProGen))]
+public class ProGenEditor : Editor 
 {
-    [CustomEditor(typeof(ProGen))]
-    public class ProGenEditor : Editor 
+    private ProGen _proGen;
+    private Editor _themeEditor;
+
+    private void OnEnable() => _proGen = (ProGen)target;
+
+    public override void OnInspectorGUI() 
     {
-        public override void OnInspectorGUI() 
-        {
-            DrawDefaultInspector();
+        DrawDefaultInspector();
             
-            ProGen progen = (ProGen)target;
+        if (GUILayout.Button("Generate"))
+            _proGen.Generate();
+            
+        DrawSettingsOnEditor(_proGen.ProGenThemeSO, _proGen.Generate, true, ref _themeEditor);
+    }
 
-            if (GUILayout.Button("Generate"))
-                progen.Generate();
+    private void DrawSettingsOnEditor(Object settings, Action onSettingsUpdated, bool foldout, ref Editor editor)
+    {
+        if (settings != null)
+        {
+            foldout = EditorGUILayout.InspectorTitlebar(foldout, settings);
 
-            if (GUI.changed)
-                progen.Generate();
+            using (var check = new EditorGUI.ChangeCheckScope())
+            {
+                CreateCachedEditor(settings, null, ref editor);
+                editor.OnInspectorGUI();
+
+                if (check.changed)
+                {
+                    if (onSettingsUpdated != null)
+                        onSettingsUpdated();
+                }
+            }
         }
     }
 }

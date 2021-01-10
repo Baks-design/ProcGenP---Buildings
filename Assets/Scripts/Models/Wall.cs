@@ -2,13 +2,12 @@ using UnityEngine;
 
 public class Wall
 {
-    public enum WallType
-    {
-        Normal,
-        Blank
-    }
+    public enum WallType { Normal, Blank }
+    public enum WallCornerType { Normal, LeftBottom, LeftUpper, RightUpper, RightBottom }
 
     public WallType WallTypeSelected { get; set; } = WallType.Normal;
+    public WallCornerType WallCornerTypeSelected { get; set; } = WallCornerType.Normal;
+
     public Vector3 Position { get; private set; }
     public Quaternion Rotation { get; private set; }
 

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f460d5e7a7fb6c45875f03293f9c4c3, type: 3}
+  m_Name: ProGenTheme
+  m_EditorClassIdentifier: 
+  m_KeepInsideWalls: 1
+  m_WallPrefab: {fileID: 0}
+  m_WindowPercentChance: 0.3
+  m_RandomizeWindowSelection: 0
+  m_WindowPrefabs: []
+  m_RandomizeRoofSelection: 1
+  m_IncludeRoof: 1
+  m_RootPrefabs: []
+  m_AllowCornerWalls: 1
+  m_CornerPrefab: {fileID: 0}
+  m_DoorPrefab: {fileID: 0}
+  m_DoorPercentChance: 0.1
+  m_RandomizerRows: 0
+  m_RandomizerColumns: 0
+  m_Rows: 5
+  m_Columns: 3
+  m_CellUnitSize: 5
+  m_NumberOfFloors: 12

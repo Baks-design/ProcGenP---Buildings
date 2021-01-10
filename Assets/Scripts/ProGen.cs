@@ -3,71 +3,23 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Baks.Core.Components;
+using Baks.Core.Theme;
 
 namespace Baks.Core
 {
     public class ProGen : MonoBehaviour
     {
-        [Header("Prefab Options")]
         [SerializeField]
-        private GameObject m_wallPrefab = default;
-
-        [SerializeField]
-        private GameObject[] m_rootPrefabs = default;
-
-        [SerializeField]
-        private bool m_randomizeRoofSelection = false;
-
-        [SerializeField]
-        private GameObject[] m_windowPrefabs = default;
-
-        [SerializeField]
-        private bool m_randomizeWindowSelection = false;
-
-        [SerializeField]
-        private GameObject m_doorPrefab = default;
-
-        [SerializeField]
-        public bool m_IncludeRoof = false;
-
-        [SerializeField]
-        private bool m_keepInsideWalls = false;
-
-        [SerializeField]
-        [Range(0, 1)]
-        public float m_WindowPercentChance = 0.3f;
-
-        [SerializeField]
-        [Range(0, 1)]
-        public float m_DoorPercentChance = 0.2f;
-
-        [Header("Grid Options")]
-        [SerializeField]
-        [Range(1, 20)]
-        public int m_Rows = 3;
-
-        [SerializeField]
-        [Range(1, 20)]
-        public int m_Columns = 3;
-
-        [SerializeField]
-        public bool m_RandomizerRows = false;
-
-        [SerializeField]
-        public bool m_RandomizerColumns = false;
-
-        [SerializeField]
-        [Range(1, 20)]
-        public float m_CellUnitSize = 1.0f;
-
-        [SerializeField]
-        [Range(1, 20)]
-        public int m_NumberOfFloors = 1;
+        private ProGenThemeSO m_proGenThemeSO = default;
 
         private int _prefabCounter = 0;
         private Floor[] _floors;
-        //TODO: fix a bug with creating rooms and unable to delete them
         private List<GameObject> _rooms = new List<GameObject>();
+
+        public ProGenThemeSO ProGenThemeSO => m_proGenThemeSO;
+        private bool CanFlagCornerWalls => m_proGenThemeSO.m_Rows >= 2
+                                        && m_proGenThemeSO.m_CornerPrefab != null
+                                        && m_proGenThemeSO.m_AllowCornerWalls;
 
         private void Awake() => Generate();
 
@@ -85,7 +37,7 @@ namespace Baks.Core
             Render();
 
             // removes inside walls
-            if (!m_keepInsideWalls)
+            if (!m_proGenThemeSO.m_KeepInsideWalls)
                 RemoveInsideWalls();
         }
 
@@ -99,12 +51,12 @@ namespace Baks.Core
 
         private void BuildDataStructure()
         {
-            _floors = new Floor[m_NumberOfFloors];
+            _floors = new Floor[m_proGenThemeSO.m_NumberOfFloors];
 
             int floorCount = 0;
-
-            int intialRows = m_Rows;
-            int initialColumns = m_Columns;
+            
+            int intialRows = m_proGenThemeSO.m_Rows;
+            int initialColumns = m_proGenThemeSO.m_Columns;
 
             foreach (Floor floor in _floors)
             {
@@ -114,14 +66,17 @@ namespace Baks.Core
                 {
                     for (int column = 0; column < initialColumns; column++)
                     {
-                        var roomPosition = new Vector3(row * m_CellUnitSize, floorCount, column * m_CellUnitSize);
-                        rooms[row, column] = new Room(roomPosition, m_IncludeRoof ? (floorCount == _floors.Length - 1) : false);
+                        var roomPosition = new Vector3(row * m_proGenThemeSO.m_CellUnitSize, floorCount, column * m_proGenThemeSO.m_CellUnitSize);
+                        rooms[row, column] = new Room(roomPosition, m_proGenThemeSO.m_IncludeRoof ? (floorCount == _floors.Length - 1) : false);
+                        
                         rooms[row, column].Walls[0] = new Wall(roomPosition, Quaternion.Euler(0, 0, 0));
                         rooms[row, column].Walls[1] = new Wall(roomPosition, Quaternion.Euler(0, 90, 0));
                         rooms[row, column].Walls[2] = new Wall(roomPosition, Quaternion.Euler(0, 180, 0));
                         rooms[row, column].Walls[3] = new Wall(roomPosition, Quaternion.Euler(0, -90, 0));
-                    
-                        if (m_RandomizerRows || m_RandomizerColumns)
+
+                        FlagCornerWalls(rooms, roomPosition, row, column);
+
+                        if (m_proGenThemeSO.m_RandomizerRows || m_proGenThemeSO.m_RandomizerColumns)
                             rooms[row, column].HasRoof = true;
                     }
                 }
@@ -129,11 +84,34 @@ namespace Baks.Core
                 _floors[floorCount] = new Floor(floorCount++, rooms);
 
                 // rule if random column or rows let´s experiment with different values
-                if (m_RandomizerRows)
-                    intialRows = Random.Range(1, m_Rows);
+                if (m_proGenThemeSO.m_RandomizerRows)
+                    intialRows = Random.Range(1, m_proGenThemeSO.m_Rows);
                 
-                if (m_RandomizerColumns)
-                    initialColumns = Random.Range(1, m_Columns);
+                if (m_proGenThemeSO.m_RandomizerColumns)
+                    initialColumns = Random.Range(1, m_proGenThemeSO.m_Columns);
+            }
+        }
+
+        private void FlagCornerWalls(Room[,] rooms, Vector3 roomPosition, int row, int column)
+        {
+            if (CanFlagCornerWalls)
+            {
+                if (row == 0 && column == 0) // left upper corner
+                {   
+                    rooms[row, column].Walls[0].WallCornerTypeSelected = Wall.WallCornerType.LeftBottom;
+                }
+                else if (row == 0 && column == m_proGenThemeSO.m_Columns - 1) // left bottom corner
+                { 
+                    rooms[row, column].Walls[1].WallCornerTypeSelected = Wall.WallCornerType.LeftUpper;
+                }
+                else if (row == m_proGenThemeSO.m_Rows - 1 && column == 0) // right upper corner
+                { 
+                    rooms[row, column].Walls[2].WallCornerTypeSelected = Wall.WallCornerType.RightBottom;
+                }
+                else if (row == m_proGenThemeSO.m_Rows - 1 && column == m_proGenThemeSO.m_Columns - 1) //right bottom corner
+                {
+                    rooms[row, column].Walls[3].WallCornerTypeSelected = Wall.WallCornerType.RightUpper;
+                }
             }
         }
 
@@ -146,55 +124,91 @@ namespace Baks.Core
                     for (int column = 0; column < floor.Columns; column++)
                     {
                         Room room = floor.Rooms[row, column];
-                        //TODO: move this to BuildStructure
                         room.FloorNumber = floor.FloorNumber;
 
-                        GameObject roomGO = new GameObject($"Room_{row}_{column}");
-                        _rooms.Add(roomGO);
-                        roomGO.transform.parent = transform;
+                        GameObject roomGo = new GameObject($"Room_{row}_{column}");
+                        _rooms.Add(roomGo);
+                        roomGo.transform.parent = transform;
 
-                        if (floor.FloorNumber == 0)
-                            RoomPlacement(Random.Range(0.0f, 1.0f) <= m_DoorPercentChance ? m_doorPrefab : m_wallPrefab, room, roomGO);
+                        // corner logic takes precedence
+                        if (room.HasRoundedCorner)
+                            RoomPlacementWithRoundedCorners(room, roomGo);
                         else
                         {
-                            // rule: if window coverage percent is within
-                            // threshold add a window otherwise add a basic wall
-                            if (Random.Range(0.0f, 1.0f) <= m_WindowPercentChance)
+                            if (floor.FloorNumber == 0)
+                                RoomPlacement(Random.Range(0.0f, 1.0f) <= m_proGenThemeSO.m_DoorPercentChance ? 
+                                                                          m_proGenThemeSO.m_DoorPrefab : m_proGenThemeSO.m_WallPrefab, room, roomGo);
+                            else
                             {
-                                if (m_randomizeWindowSelection)
+                                // rule: if window coverage percent is within
+                                // threshold add a window otherwise add a basic wall
+                                if (Random.Range(0.0f, 1.0f) <= m_proGenThemeSO.m_WindowPercentChance)
                                 {
-                                    int windowIndex = Random.Range(0, m_windowPrefabs.Length);
-                                    RoomPlacement(m_windowPrefabs[windowIndex], room, roomGO);
+                                    if (ProGenThemeSO.m_RandomizeWindowSelection)
+                                    {
+                                        int windowIndex = Random.Range(0, m_proGenThemeSO.m_WindowPrefabs.Length);
+                                        RoomPlacement(m_proGenThemeSO.m_WindowPrefabs[windowIndex], room, roomGo);
+                                    }
+                                    else
+                                        RoomPlacement(m_proGenThemeSO.m_WindowPrefabs[0], room, roomGo);
                                 }
                                 else
-                                    RoomPlacement(m_windowPrefabs[0], room, roomGO);
+                                    RoomPlacement(m_proGenThemeSO.m_WallPrefab, room, roomGo);
                             }
-                            else
-                                RoomPlacement(m_wallPrefab, room, roomGO);
                         }
                     }
                 }
             }
         }
 
-        private void RoomPlacement(GameObject prefab, Room room, GameObject roomGO)
+        private void RoomPlacementWithRoundedCorners(Room room, GameObject roomGo)
         {
-            SpawnPrefab(prefab, roomGO.transform, room.Walls[0].Position, room.Walls[0].Rotation);
-            SpawnPrefab(prefab, roomGO.transform, room.Walls[1].Position, room.Walls[1].Rotation);
-            SpawnPrefab(prefab, roomGO.transform, room.Walls[2].Position, room.Walls[2].Rotation);
-            SpawnPrefab(prefab, roomGO.transform, room.Walls[3].Position, room.Walls[3].Rotation);
-
-            if (room.HasRoof)
+            if (room.Walls.Any(w => w.WallCornerTypeSelected == Wall.WallCornerType.LeftBottom))
             {
-                // rule if we need to randomize roof and we´re at the top
-                if (m_randomizeRoofSelection && room.FloorNumber == _floors.Count() - 1)
-                {
-                    int roofIndex = Random.Range(0, m_rootPrefabs.Length);
-                    SpawnPrefab(m_rootPrefabs[roofIndex], roomGO.transform, room.Walls[0].Position, room.Walls[0].Rotation);
-                }
-                else
-                    SpawnPrefab(m_rootPrefabs[0], roomGO.transform, room.Walls[0].Position, room.Walls[0].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_CornerPrefab, roomGo.transform, room.Walls[0].Position, room.Walls[0].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[2].Position, room.Walls[2].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[3].Position, room.Walls[3].Rotation);
             }
+            else if (room.Walls.Any(w => w.WallCornerTypeSelected == Wall.WallCornerType.LeftUpper))
+            {
+                SpawnPrefab(m_proGenThemeSO.m_CornerPrefab, roomGo.transform, room.Walls[1].Position, room.Walls[1].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[0].Position, room.Walls[0].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[3].Position, room.Walls[3].Rotation);
+            }
+            else if (room.Walls.Any(w => w.WallCornerTypeSelected == Wall.WallCornerType.RightUpper))
+            {
+                SpawnPrefab(m_proGenThemeSO.m_CornerPrefab, roomGo.transform, room.Walls[2].Position, room.Walls[2].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[0].Position, room.Walls[0].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[1].Position, room.Walls[1].Rotation);
+            }
+            else if (room.Walls.Any(w => w.WallCornerTypeSelected == Wall.WallCornerType.RightBottom))
+            {
+                SpawnPrefab(m_proGenThemeSO.m_CornerPrefab, roomGo.transform, room.Walls[3].Position, room.Walls[3].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[2].Position, room.Walls[2].Rotation);
+                SpawnPrefab(m_proGenThemeSO.m_WallPrefab, roomGo.transform, room.Walls[1].Position, room.Walls[1].Rotation);
+            }
+        }
+
+        private void RoomPlacement(GameObject prefab, Room room, GameObject roomGo)
+        {
+            SpawnPrefab(prefab, roomGo.transform, room.Walls[0].Position, room.Walls[0].Rotation);
+            SpawnPrefab(prefab, roomGo.transform, room.Walls[1].Position, room.Walls[1].Rotation);
+            SpawnPrefab(prefab, roomGo.transform, room.Walls[2].Position, room.Walls[2].Rotation);
+            SpawnPrefab(prefab, roomGo.transform, room.Walls[3].Position, room.Walls[3].Rotation);
+
+            AddRoof(room, roomGo);
+        }
+
+        private void AddRoof(Room room, GameObject roomGo)
+        {
+            // rule: if we need to randomize roof and we´re at the top
+            if (m_proGenThemeSO.m_RandomizeRoofSelection && room.FloorNumber == _floors.Count() - 1)
+            {
+                int roofIndex = Random.Range(0, m_proGenThemeSO.m_RootPrefabs.Length);
+                SpawnPrefab(m_proGenThemeSO.m_RootPrefabs[roofIndex], roomGo.transform, room.Walls[0].Position, room.Walls[0].Rotation);
+            }
+            else
+                SpawnPrefab(m_proGenThemeSO.m_RootPrefabs[0], roomGo.transform, room.Walls[0].Position, room.Walls[0].Rotation);
         }
 
         private void SpawnPrefab(GameObject prefab, Transform parent, Vector3 position, Quaternion rotation)
@@ -203,6 +217,7 @@ namespace Baks.Core
             gameObject.transform.parent = parent;
             gameObject.AddComponent<WallComponent>();
             gameObject.name = $"{gameObject.name}_{_prefabCounter}";
+            
             _prefabCounter++;
         }
 

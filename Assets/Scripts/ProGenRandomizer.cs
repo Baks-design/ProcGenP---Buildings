@@ -53,13 +53,13 @@ namespace Baks.Core.Components
         {
             if (_randomizerTimer >= m_randomizeInSeconds)
             {
-                _proGen.m_Rows = Random.Range(m_minRows, m_maxRows);
-                _proGen.m_Columns = Random.Range(m_minColumns, m_maxColumns);
-                _proGen.m_NumberOfFloors = Random.Range(m_minFloors, m_maxFloors);
-                _proGen.m_CellUnitSize = Random.Range(m_minCellUnitSize, m_maxCellUnitSize);
+                _proGen.ProGenThemeSO.m_Rows = Random.Range(m_minRows, m_maxRows);
+                _proGen.ProGenThemeSO.m_Columns = Random.Range(m_minColumns, m_maxColumns);
+                _proGen.ProGenThemeSO.m_NumberOfFloors = Random.Range(m_minFloors, m_maxFloors);
+                _proGen.ProGenThemeSO.m_CellUnitSize = Random.Range(m_minCellUnitSize, m_maxCellUnitSize);
 
                 if (m_randomizeRoofInclusion)
-                    _proGen.m_IncludeRoof = !_proGen.m_IncludeRoof;
+                    _proGen.ProGenThemeSO.m_IncludeRoof = !_proGen.ProGenThemeSO;
                 
                 _proGen.Generate();
                 _randomizerTimer = 0.0f;
