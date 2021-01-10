@@ -13,20 +13,22 @@ MonoBehaviour:
   m_Name: ProGenTheme
   m_EditorClassIdentifier: 
   m_KeepInsideWalls: 1
-  m_WallPrefab: {fileID: 0}
+  m_WallPrefab: {fileID: 4784039695640533358, guid: 3a76c8ea9d93f90438b489bf5c68652b, type: 3}
   m_WindowPercentChance: 0.3
-  m_RandomizeWindowSelection: 0
-  m_WindowPrefabs: []
+  m_RandomizeWindowSelection: 1
+  m_WindowPrefabs:
+  - {fileID: 4339281981906606698, guid: 08be57b05d2f86f41b97d353e590882b, type: 3}
   m_RandomizeRoofSelection: 1
   m_IncludeRoof: 1
-  m_RootPrefabs: []
+  m_RootPrefabs:
+  - {fileID: 1557574925210733854, guid: 10faf5e98254abf4a83715c3c991bdb6, type: 3}
   m_AllowCornerWalls: 1
-  m_CornerPrefab: {fileID: 0}
-  m_DoorPrefab: {fileID: 0}
+  m_CornerPrefab: {fileID: 6398290490459313035, guid: 84464ff4b60554f4f9f340a1006819ec, type: 3}
+  m_DoorPrefab: {fileID: 1705084206797021831, guid: 8c055fc0c239629498dca8d555206e2f, type: 3}
   m_DoorPercentChance: 0.1
-  m_RandomizerRows: 0
-  m_RandomizerColumns: 0
-  m_Rows: 5
-  m_Columns: 3
-  m_CellUnitSize: 5
-  m_NumberOfFloors: 12
+  m_RandomizerRows: 1
+  m_RandomizerColumns: 1
+  m_Rows: 3
+  m_Columns: 1
+  m_CellUnitSize: 1
+  m_NumberOfFloors: 16
